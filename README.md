@@ -23,18 +23,60 @@ amplia o antigo *Tournament Director's Poker Clock* (Adobe Flash, 2007).
 
 ## Dados
 
-Publicado como artefato no claude.ai, o app usa o banco compartilhado do
-artefato (`db`): TV, celular e qualquer outro aparelho logado veem a mesma
-partida em tempo real. O relógio é derivado de uma âncora de horário gravada a
-cada ação, então nenhum aparelho precisa escrever a cada segundo.
+A página detecta onde está rodando e escolhe o armazenamento:
 
-Aberto direto no navegador (`index.html`), os dados ficam no `localStorage`
-daquele navegador. Há exportação e importação em JSON nos dois modos.
+1. **Servidor próprio** (`server.js`, este repositório em Docker): banco
+   SQLite em `DATA_DIR/poker.sqlite` e eventos em tempo real (SSE). TV,
+   celular e qualquer aparelho que abra o endereço veem a mesma partida.
+2. **Artefato no claude.ai**: banco compartilhado do artefato (`db`).
+3. **Arquivo aberto direto no navegador**: `localStorage` daquele navegador.
+
+O relógio é derivado de uma âncora de horário gravada a cada ação, então
+nenhum aparelho precisa escrever a cada segundo. Há exportação e importação
+em JSON em todos os modos.
+
+## Deploy (Coolify / Docker)
+
+O `Dockerfile` roda `node server.js` (Node 24, SQLite embutido, sem npm).
+
+| Item | Valor |
+| --- | --- |
+| Build pack | Dockerfile |
+| Porta exposta | `3000` |
+| Volume persistente | `/data` (banco SQLite e logo) |
+| Health check | `GET /healthz` |
+| Domínio | `https://poker.tudomudou.com.br` |
+
+Variáveis de ambiente (ver `.env.example`):
+
+| Variável | Padrão | Para quê |
+| --- | --- | --- |
+| `PORT` | `3000` | porta interna |
+| `DATA_DIR` | `/data` | pasta do banco e do logo |
+| `ADMIN_PIN` | vazio | PIN pedido pela página para alterar dados; a TV só lê |
+
+Recursos: o servidor é leve (um processo Node, SQLite em WAL). 128 MB de RAM e
+uma fração de CPU bastam; o banco de uma liga inteira fica na casa dos
+kilobytes a poucos megabytes.
+
+API (usada pela própria página): `GET /api/state`, `GET /api/events` (SSE),
+`GET /api/ranking` (ranking calculado em SQL), `PUT|DELETE
+/api/{tournaments|players|games}/:id`, `PUT|DELETE /api/live`, `PUT
+/api/settings`, `POST|DELETE /api/logo`, `GET /api/logo`. Escritas exigem o
+cabeçalho `X-Admin-Pin` quando `ADMIN_PIN` está definido.
+
+Tabelas: `tournaments`, `players`, `games` (documento JSON mais colunas de
+busca), `game_results` (uma linha por jogador por partida: colocação, quem
+eliminou, mão, prêmio, pontos), `live`, `settings`, `meta`.
+
+Backup: copie `poker.sqlite` (e `logo.*`) do volume, ou use Exportar na página.
 
 ## Estrutura
 
 ```
 index.html          página pronta, abre direto no navegador
+server.js           servidor Node (SQLite + SSE) para hospedagem própria
+Dockerfile          imagem para Coolify/Docker; docker-compose.yml para rodar local
 dist/artifact.html  mesmo conteúdo sem doctype/head (formato do Artifact)
 src/
   head.html         title, meta e fontes

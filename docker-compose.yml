@@ -1,0 +1,14 @@
+services:
+  poker:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATA_DIR=/data
+      - ADMIN_PIN=${ADMIN_PIN:-}
+    volumes:
+      - poker-data:/data
+    restart: unless-stopped
+volumes:
+  poker-data:
