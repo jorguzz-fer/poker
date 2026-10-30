@@ -353,7 +353,7 @@ function deleteT(){const t=selected();if(!t)return;showDialog('Excluir o torneio
 function startT(){const t=selected();if(!t)return;if(totalPct(t.winStruct)>100){showDialog('Não dá para iniciar: a premiação soma mais de 100%. Reduza as porcentagens em Configurações.',[{label:'Ok',fn:closeDialog}]);return}if(!t.blindStruct.length){showDialog('Não dá para iniciar: crie pelo menos um round na estrutura de blinds.',[{label:'Ok',fn:closeDialog}]);return}if(S.live&&S.live.tid!==t.id){showDialog('Já existe uma partida em andamento ("'+(tById(S.live.tid)||{}).name+'"). Descartar a atual e preparar esta?',[{label:'Cancelar',fn:closeDialog},{label:'Descartar e continuar',kind:'danger',fn(){S.live=null;putLive();dialog=null;openPrep(t)}}]);return}dialog=null;openPrep(t)}
 function openPrep(t){const last=S.games.filter(g=>g.tid===t.id).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];prep={tid:t.id,roster:last?last.results.map(r=>r.pid).filter(pid=>pById(pid)):[],dealer:'',newName:''};view='prep';render()}
 function endT(){const L=S.live;if(!L)return;showDialog('Encerrar o relógio e fechar a partida? Você vai conferir colocações, prêmios e pontos antes de salvar.',[{label:'Não',fn:closeDialog},{label:'Sim, fechar partida',kind:'primary',fn(){dialog=null;if(L.running){L.time=curTime(L);L.running=false;L.lastTick=null;putLive()}openClose()}}])}
-function saveDraft(){const d=draft;d.numPlayers=Math.max(1,Math.round(+d.numPlayers||1));d.winStruct=d.winStruct.map(v=>Math.max(0,+v||0));d.blindStruct=d.blindStruct.map(l=>({sb:+l.sb||0,bb:+l.bb||0,ante:+l.ante||0,time:Math.max(0,+l.time||0),brk:Math.max(0,+l.brk||0)}));d.reBuyLevel=Math.min(Math.max(1,Math.round(+d.reBuyLevel||1)),Math.max(1,d.blindStruct.length));d.scoring.pos=d.scoring.pos.map(v=>+v||0);d.scoring.base=+d.scoring.base||0;d.scoring.ko=+d.scoring.ko||0;if(!d.name.trim())d.name='Sem nome';const tot=totalPct(d.winStruct);if(d.winStruct.length&&tot!==100){showDialog('A premiação soma '+fmtN(tot)+'% e não 100%. Quer que eu ajuste proporcionalmente para fechar em 100%?',[{label:'Voltar',fn:closeDialog},{label:'Salvar assim mesmo',fn(){dialog=null;commitDraft()}},{label:'Ajustar e salvar',kind:'primary',fn(){draft.winStruct=evenOut(draft.winStruct);dialog=null;commitDraft()}}]);return}commitDraft()}
+function saveDraft(){const d=draft;d.numPlayers=Math.max(1,Math.round(+d.numPlayers||1));d.winStruct=d.winStruct.map(v=>Math.max(0,+v||0));d.blindStruct=d.blindStruct.map(l=>({sb:+l.sb||0,bb:+l.bb||0,ante:+l.ante||0,time:Math.max(0,+l.time||0),brk:Math.max(0,+l.brk||0)}));d.reBuyLevel=Math.min(Math.max(1,Math.round(+d.reBuyLevel||1)),Math.max(1,d.blindStruct.length));delete d.scoring._cleared;d.scoring.pos=d.scoring.pos.map(v=>+v||0);d.scoring.base=+d.scoring.base||0;d.scoring.ko=+d.scoring.ko||0;if(!d.name.trim())d.name='Sem nome';const tot=totalPct(d.winStruct);if(d.winStruct.length&&tot!==100){showDialog('A premiação soma '+fmtN(tot)+'% e não 100%. Quer que eu ajuste proporcionalmente para fechar em 100%?',[{label:'Voltar',fn:closeDialog},{label:'Salvar assim mesmo',fn(){dialog=null;commitDraft()}},{label:'Ajustar e salvar',kind:'primary',fn(){draft.winStruct=evenOut(draft.winStruct);dialog=null;commitDraft()}}]);return}commitDraft()}
 function commitDraft(){const d=draft;delete d._new;putT(d);UI.selectedId=d.id;saveUI();if(S.live&&S.live.tid===d.id){S.live.players=Math.min(S.live.players,d.numPlayers);putLive()}draft=null;view=(S.live&&S.live.tid===d.id)?'clock':'home';render()}
 function cancelDraft(){const orig=tById(draft.id);const changed=draft._new?true:JSON.stringify(orig)!==JSON.stringify(draft);const back=()=>{dialog=null;draft=null;view=(S.live&&orig&&S.live.tid===orig.id)?'clock':'home';render()};if(!changed){back();return}showDialog('As alterações no torneio serão perdidas. Descartar?',[{label:'Continuar editando',fn:closeDialog},{label:'Descartar',kind:'danger',fn:back}])}
 
@@ -536,11 +536,13 @@ function bindBlinds(root,d){
   on(root,'[data-bins]','click',e=>{if(d.blindStruct.length>=MAX_LEVELS)return;const i=+e.currentTarget.dataset.bins;const l=d.blindStruct[i];d.blindStruct.splice(i+1,0,{sb:l.sb,bb:l.bb,ante:l.ante,time:l.time,brk:0});render()});
   on(root,'[data-bdel]','click',e=>{d.blindStruct.splice(+e.currentTarget.dataset.bdel,1);d.reBuyLevel=Math.max(1,Math.min(d.reBuyLevel,d.blindStruct.length));render()})}
 
-function scoringHtml(d){const s=d.scoring;return `<div style="display:grid;gap:20px">
+function scoringTarget(d){return Math.min(MAX_WIN,Math.max(S.players.length,+d.numPlayers||0,1))}
+function extendScoring(d){const s=d.scoring;const n=scoringTarget(d);while(s.pos.length<n){const last=s.pos.length?+s.pos[s.pos.length-1]||0:scoringTarget(d)+1;s.pos.push(Math.max(1,last-1))}}
+function scoringHtml(d){const s=d.scoring;if(!s._cleared)extendScoring(d);const n=scoringTarget(d);return `<div style="display:grid;gap:20px">
   <section class="panel" style="display:grid;gap:14px">
-    <h3>Pontos por colocação</h3>
-    <p class="note" style="margin:0">Pontos que cada colocação rende no ranking. Colocações além da lista rendem só os pontos de participação.</p>
-    <div class="toolbar"><button class="btn small" id="scAdd" ${s.pos.length>=MAX_WIN?'disabled':''}>+ Colocação</button><button class="btn small" id="scPreset1">Preset 10 / 7 / 5 / 3 / 2</button><button class="btn small" id="scPreset2">Preset decrescente (N … 1)</button><button class="btn small" id="scClear" ${s.pos.length?'':'disabled'}>Limpar</button></div>
+    <div class="row spread"><h3>Pontos por colocação</h3><span class="note num">${S.players.length} jogador${S.players.length===1?'':'es'} cadastrado${S.players.length===1?'':'s'} · ${s.pos.length} colocaç${s.pos.length===1?'ão':'ões'}</span></div>
+    <p class="note" style="margin:0">Uma linha para cada colocação possível: a tabela é completada automaticamente até o número de jogadores cadastrados (${n}), em ordem decrescente, e você ajusta os pontos de cada lugar. Colocações além da lista rendem só os pontos de participação.</p>
+    <div class="toolbar"><button class="btn small" id="scAdd" ${s.pos.length>=MAX_WIN?'disabled':''}>+ Colocação</button><button class="btn small" id="scPreset2">Preset decrescente (${n} … 1)</button><button class="btn small" id="scPreset1">Preset 10 / 7 / 5 / 3 / 2 + 1</button><button class="btn small" id="scClear" ${s.pos.length?'':'disabled'}>Limpar</button></div>
     ${s.pos.length?`<div class="twrap"><table><thead><tr><th>Colocação</th><th>Pontos</th><th></th></tr></thead><tbody>${s.pos.map((p,i)=>`<tr><td>${ord(i+1)}</td><td><input type="number" inputmode="decimal" step="0.5" data-sp="${i}" value="${esc(p)}"></td><td><span class="rowbtns"><button data-spdel="${i}" title="Excluir">×</button></span></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Nenhuma colocação pontua.</p>'}
   </section>
   <section class="panel" style="display:grid;gap:14px">
@@ -550,10 +552,10 @@ function scoringHtml(d){const s=d.scoring;return `<div style="display:grid;gap:2
   </section>
 </div>`}
 function bindScoring(root,d){const s=d.scoring;
-  on(root,'#scAdd','click',()=>{s.pos.push(Math.max(0,(+s.pos[s.pos.length-1]||1)-1));render()});
-  on(root,'#scPreset1','click',()=>{s.pos=[10,7,5,3,2];render()});
-  on(root,'#scPreset2','click',()=>{const n=Math.max(2,d.numPlayers);s.pos=Array.from({length:n},(_,i)=>n-i);render()});
-  on(root,'#scClear','click',()=>{s.pos=[];render()});
+  on(root,'#scAdd','click',()=>{s.pos.push(Math.max(0,(+s.pos[s.pos.length-1]||1)-1));delete s._cleared;render()});
+  on(root,'#scPreset1','click',()=>{s.pos=[10,7,5,3,2];extendScoring(d);render()});
+  on(root,'#scPreset2','click',()=>{const n=scoringTarget(d);s.pos=Array.from({length:n},(_,i)=>n-i);render()});
+  on(root,'#scClear','click',()=>{s.pos=[];s._cleared=true;render()});
   on(root,'[data-sp]','change',e=>{s.pos[+e.target.dataset.sp]=+e.target.value||0;render()});
   on(root,'[data-spdel]','click',e=>{s.pos.splice(+e.currentTarget.dataset.spdel,1);render()});
   on(root,'#scBase','input',e=>{s.base=+e.target.value||0});on(root,'#scKo','input',e=>{s.ko=+e.target.value||0})}
