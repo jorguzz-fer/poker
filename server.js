@@ -17,6 +17,11 @@ const MAX_LOGO = 4 * 1024 * 1024;
 const COLS = { tournaments: 'tournaments', players: 'players', games: 'games' };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+// DATA_DIR é um volume de verdade? (device diferente da raiz do container). Sem
+// volume, o banco some a cada deploy: a página avisa o usuário.
+let persistent = true;
+try { persistent = process.env.ASSUME_PERSISTENT === '1' || fs.statSync(DATA_DIR).dev !== fs.statSync('/').dev; } catch (e) { persistent = false; }
+if (!persistent) console.warn('AVISO: ' + DATA_DIR + ' não parece ser um volume persistente. Configure um volume em ' + DATA_DIR + ' ou os dados somem no próximo deploy.');
 const db = new DatabaseSync(path.join(DATA_DIR, 'poker.sqlite'));
 db.exec(`
   PRAGMA journal_mode = WAL;
@@ -83,7 +88,7 @@ function write(kind, col, id, data) {
   return r;
 }
 function snapshot() {
-  return { tournaments: rows(q.allT), players: rows(q.allP), games: rows(q.allG), live: parse(q.live.get()), settings: parse(q.settings.get()) || {}, rev, pinRequired: !!ADMIN_PIN };
+  return { tournaments: rows(q.allT), players: rows(q.allP), games: rows(q.allG), live: parse(q.live.get()), settings: parse(q.settings.get()) || {}, rev, pinRequired: !!ADMIN_PIN, persistent };
 }
 
 const clients = new Set();
@@ -118,6 +123,7 @@ const server = http.createServer(async (req, res) => {
       fs.createReadStream(INDEX).pipe(res); return;
     }
     if (p === '/healthz') return send(res, 200, 'ok');
+    if (req.method === 'GET' && p === '/api/backup') { res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': 'attachment; filename="poker-backup-' + new Date().toISOString().slice(0, 10) + '.json"' }); const o = snapshot(); delete o.rev; delete o.pinRequired; delete o.persistent; return res.end(JSON.stringify(o)); }
     if (req.method === 'GET' && p === '/api/state') return send(res, 200, snapshot());
     if (req.method === 'GET' && p === '/api/ranking') return send(res, 200, q.ranking.all());
     if (req.method === 'GET' && p === '/api/events') {
