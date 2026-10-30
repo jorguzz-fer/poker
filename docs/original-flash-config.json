@@ -1,0 +1,1338 @@
+{
+ "APP_NAME": "The Tournament Director's Poker Clock",
+ "APP_VERSION": "VERSION 0.8 BETA",
+ "NUM_TOURNAMENTS": 12,
+ "WINSTRUCT_LEVELS": 100,
+ "WINSTRUCT_LISTSIZE": 11,
+ "BLINDSTRUCT_LEVELS": 50,
+ "BLINDSTRUCT_LISTSIZE": 12,
+ "PRIZELIST_LEN": 3,
+ "PRIZE_SCROLLSECS": 6,
+ "RESULTLIST_LEN": 7,
+ "SPONSOR_TEXT": "",
+ "HELPLINK_URL": null,
+ "LOGOLINK_URL": "http://www.bwin.com",
+ "WINSTRUCT_PRESETS": [
+  {
+   "presets": [
+    {
+     "presets": [
+      100
+     ],
+     "maxPlayers": 3
+    },
+    {
+     "presets": [
+      70,
+      30
+     ],
+     "maxPlayers": 6
+    },
+    {
+     "presets": [
+      50,
+      30,
+      20
+     ],
+     "maxPlayers": 30
+    },
+    {
+     "presets": [
+      40,
+      24,
+      16,
+      12,
+      8
+     ],
+     "maxPlayers": 50
+    },
+    {
+     "presets": [
+      30,
+      20,
+      12.5,
+      9,
+      8,
+      6.5,
+      5,
+      4,
+      3,
+      2
+     ],
+     "maxPlayers": 200
+    },
+    {
+     "presets": [
+      30,
+      19.5,
+      12,
+      8,
+      6.5,
+      5,
+      3.5,
+      2.5,
+      1.75,
+      1.25,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "maxPlayers": 300
+    },
+    {
+     "presets": [
+      25,
+      15,
+      10,
+      8,
+      5,
+      4,
+      3,
+      2,
+      1.75,
+      1.25,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75
+     ],
+     "maxPlayers": 500
+    },
+    {
+     "presets": [
+      20,
+      12.5,
+      9,
+      7,
+      5,
+      4,
+      3,
+      1.75,
+      1.5,
+      1.25,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.75,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5
+     ],
+     "maxPlayers": 700
+    },
+    {
+     "presets": [
+      20,
+      12,
+      9,
+      7,
+      5,
+      4,
+      3,
+      1.75,
+      1.5,
+      1.25,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2
+     ],
+     "maxPlayers": 1000
+    },
+    {
+     "presets": [
+      20,
+      12,
+      8,
+      6,
+      5,
+      4,
+      2.5,
+      1.75,
+      1.25,
+      1,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.95,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15,
+      0.15
+     ],
+     "maxPlayers": 9999
+    }
+   ],
+   "name": "Standard"
+  },
+  {
+   "presets": [
+    {
+     "presets": [
+      100
+     ],
+     "maxPlayers": 4
+    },
+    {
+     "presets": [
+      70,
+      30
+     ],
+     "maxPlayers": 7
+    },
+    {
+     "presets": [
+      50,
+      30,
+      20
+     ],
+     "maxPlayers": 20
+    },
+    {
+     "presets": [
+      45,
+      25,
+      17.5,
+      12.5
+     ],
+     "maxPlayers": 30
+    },
+    {
+     "presets": [
+      40,
+      23.33,
+      16.67,
+      11.67,
+      8.33
+     ],
+     "maxPlayers": 40
+    },
+    {
+     "presets": [
+      40,
+      22,
+      15,
+      10,
+      7,
+      6
+     ],
+     "maxPlayers": 50
+    },
+    {
+     "presets": [
+      30,
+      20,
+      13,
+      9.4,
+      6.6,
+      5.8,
+      4.8,
+      4,
+      3.4,
+      3
+     ],
+     "maxPlayers": 80
+    },
+    {
+     "presets": [
+      27,
+      18,
+      12,
+      8.7,
+      6,
+      5.2,
+      4.4,
+      3.5,
+      2.8,
+      2.4,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "maxPlayers": 120
+    },
+    {
+     "presets": [
+      26,
+      17,
+      11,
+      8,
+      5.8,
+      4.8,
+      4.2,
+      3.4,
+      2.6,
+      2.2,
+      1.6,
+      1.6,
+      1.6,
+      1.6,
+      1.6,
+      1.4,
+      1.4,
+      1.4,
+      1.4,
+      1.4
+     ],
+     "maxPlayers": 170
+    },
+    {
+     "presets": [
+      25,
+      16,
+      10,
+      6.8,
+      4.8,
+      4.2,
+      3.4,
+      2.8,
+      2.2,
+      1.8,
+      1.4,
+      1.4,
+      1.4,
+      1.4,
+      1.4,
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "maxPlayers": 250
+    },
+    {
+     "presets": [
+      25,
+      16,
+      10,
+      6.6,
+      4.6,
+      3.8,
+      3,
+      2.4,
+      2,
+      1.6,
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      1.2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6
+     ],
+     "maxPlayers": 350
+    },
+    {
+     "presets": [
+      25,
+      16,
+      10,
+      6.4,
+      4.4,
+      3.4,
+      2.6,
+      2.1,
+      1.7,
+      1.4,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5
+     ],
+     "maxPlayers": 450
+    },
+    {
+     "presets": [
+      25,
+      15,
+      9,
+      6.4,
+      4.4,
+      3.3,
+      2.5,
+      2,
+      1.6,
+      1.3,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4
+     ],
+     "maxPlayers": 550
+    },
+    {
+     "presets": [
+      25,
+      15,
+      9,
+      6.2,
+      4.2,
+      3.2,
+      2.3,
+      1.9,
+      1.5,
+      1.2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.6,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.5,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.35,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3
+     ],
+     "maxPlayers": 700
+    },
+    {
+     "presets": [
+      24,
+      14,
+      8.8,
+      6.2,
+      4.2,
+      3.2,
+      2.3,
+      1.9,
+      1.5,
+      1.2,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.55,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.45,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.37,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.33,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.27,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25
+     ],
+     "maxPlayers": 900
+    }
+   ],
+   "name": "Flat"
+  }
+ ],
+ "BLINDSTRUCT_PRESETS": [
+  {
+   "presets": [
+    {
+     "time": 20,
+     "bigBlind": 20,
+     "smallBlind": 10
+    },
+    {
+     "time": 20,
+     "bigBlind": 30,
+     "smallBlind": 15
+    },
+    {
+     "time": 20,
+     "bigBlind": 50,
+     "smallBlind": 25
+    },
+    {
+     "time": 20,
+     "bigBlind": 100,
+     "smallBlind": 50
+    },
+    {
+     "time": 20,
+     "bigBlind": 150,
+     "smallBlind": 75
+    },
+    {
+     "time": 20,
+     "bigBlind": 200,
+     "smallBlind": 100
+    },
+    {
+     "time": 20,
+     "bigBlind": 300,
+     "smallBlind": 150
+    },
+    {
+     "time": 20,
+     "bigBlind": 400,
+     "smallBlind": 200
+    },
+    {
+     "time": 20,
+     "bigBlind": 600,
+     "smallBlind": 300
+    },
+    {
+     "time": 20,
+     "bigBlind": 800,
+     "smallBlind": 400
+    },
+    {
+     "time": 20,
+     "bigBlind": 1000,
+     "smallBlind": 500
+    },
+    {
+     "time": 20,
+     "bigBlind": 1200,
+     "smallBlind": 600
+    },
+    {
+     "time": 20,
+     "bigBlind": 1600,
+     "smallBlind": 800
+    },
+    {
+     "time": 20,
+     "bigBlind": 2000,
+     "smallBlind": 1000
+    },
+    {
+     "time": 20,
+     "bigBlind": 3000,
+     "smallBlind": 1500
+    },
+    {
+     "time": 20,
+     "bigBlind": 4000,
+     "smallBlind": 2000
+    },
+    {
+     "time": 20,
+     "bigBlind": 6000,
+     "smallBlind": 3000
+    },
+    {
+     "time": 20,
+     "bigBlind": 8000,
+     "smallBlind": 4000
+    },
+    {
+     "time": 20,
+     "bigBlind": 10000,
+     "smallBlind": 5000
+    },
+    {
+     "time": 20,
+     "bigBlind": 12000,
+     "smallBlind": 6000
+    },
+    {
+     "time": 20,
+     "bigBlind": 16000,
+     "smallBlind": 8000
+    },
+    {
+     "time": 20,
+     "bigBlind": 20000,
+     "smallBlind": 10000
+    },
+    {
+     "time": 20,
+     "bigBlind": 30000,
+     "smallBlind": 15000
+    },
+    {
+     "time": 20,
+     "bigBlind": 40000,
+     "smallBlind": 20000
+    },
+    {
+     "time": 20,
+     "bigBlind": 60000,
+     "smallBlind": 30000
+    },
+    {
+     "time": 20,
+     "bigBlind": 80000,
+     "smallBlind": 40000
+    },
+    {
+     "time": 20,
+     "bigBlind": 100000,
+     "smallBlind": 50000
+    },
+    {
+     "time": 20,
+     "bigBlind": 120000,
+     "smallBlind": 60000
+    },
+    {
+     "time": 20,
+     "bigBlind": 160000,
+     "smallBlind": 80000
+    },
+    {
+     "time": 20,
+     "bigBlind": 200000,
+     "smallBlind": 100000
+    }
+   ],
+   "name": "Standard"
+  },
+  {
+   "presets": [
+    {
+     "time": 20,
+     "bigBlind": 50,
+     "smallBlind": 25
+    },
+    {
+     "time": 20,
+     "bigBlind": 100,
+     "smallBlind": 50
+    },
+    {
+     "time": 20,
+     "bigBlind": 200,
+     "smallBlind": 100
+    },
+    {
+     "time": 20,
+     "bigBlind": 300,
+     "smallBlind": 150
+    },
+    {
+     "time": 20,
+     "ante": 25,
+     "bigBlind": 300,
+     "smallBlind": 150
+    },
+    {
+     "time": 20,
+     "ante": 50,
+     "bigBlind": 500,
+     "smallBlind": 200
+    },
+    {
+     "time": 20,
+     "ante": 75,
+     "bigBlind": 600,
+     "smallBlind": 300
+    },
+    {
+     "time": 20,
+     "ante": 100,
+     "bigBlind": 800,
+     "smallBlind": 400
+    },
+    {
+     "time": 20,
+     "ante": 200,
+     "bigBlind": 1200,
+     "smallBlind": 600
+    },
+    {
+     "time": 20,
+     "ante": 300,
+     "bigBlind": 1600,
+     "smallBlind": 800
+    },
+    {
+     "time": 20,
+     "ante": 400,
+     "bigBlind": 2400,
+     "smallBlind": 1200
+    },
+    {
+     "time": 20,
+     "ante": 500,
+     "bigBlind": 3000,
+     "smallBlind": 1500
+    },
+    {
+     "time": 20,
+     "ante": 500,
+     "bigBlind": 4000,
+     "smallBlind": 2000
+    },
+    {
+     "time": 20,
+     "ante": 1000,
+     "bigBlind": 6000,
+     "smallBlind": 3000
+    },
+    {
+     "time": 20,
+     "ante": 1000,
+     "bigBlind": 8000,
+     "smallBlind": 4000
+    },
+    {
+     "time": 20,
+     "ante": 2000,
+     "bigBlind": 12000,
+     "smallBlind": 6000
+    },
+    {
+     "time": 20,
+     "ante": 3000,
+     "bigBlind": 16000,
+     "smallBlind": 8000
+    },
+    {
+     "time": 20,
+     "ante": 4000,
+     "bigBlind": 24000,
+     "smallBlind": 12000
+    },
+    {
+     "time": 20,
+     "ante": 5000,
+     "bigBlind": 30000,
+     "smallBlind": 15000
+    },
+    {
+     "time": 20,
+     "ante": 5000,
+     "bigBlind": 40000,
+     "smallBlind": 20000
+    },
+    {
+     "time": 20,
+     "ante": 10000,
+     "bigBlind": 60000,
+     "smallBlind": 30000
+    },
+    {
+     "time": 20,
+     "ante": 10000,
+     "bigBlind": 80000,
+     "smallBlind": 40000
+    }
+   ],
+   "name": "Standard Ante"
+  },
+  {
+   "presets": [
+    {
+     "time": 20,
+     "bigBlind": 2,
+     "smallBlind": 1
+    },
+    {
+     "time": 20,
+     "bigBlind": 4,
+     "smallBlind": 2
+    },
+    {
+     "time": 20,
+     "bigBlind": 6,
+     "smallBlind": 3
+    },
+    {
+     "time": 20,
+     "bigBlind": 8,
+     "smallBlind": 4
+    },
+    {
+     "time": 20,
+     "bigBlind": 12,
+     "smallBlind": 6
+    },
+    {
+     "time": 20,
+     "bigBlind": 16,
+     "smallBlind": 8
+    },
+    {
+     "time": 20,
+     "bigBlind": 20,
+     "smallBlind": 10
+    },
+    {
+     "time": 20,
+     "bigBlind": 30,
+     "smallBlind": 15
+    },
+    {
+     "time": 20,
+     "bigBlind": 40,
+     "smallBlind": 20
+    },
+    {
+     "time": 20,
+     "bigBlind": 60,
+     "smallBlind": 30
+    },
+    {
+     "time": 20,
+     "bigBlind": 80,
+     "smallBlind": 40
+    },
+    {
+     "time": 20,
+     "bigBlind": 120,
+     "smallBlind": 60
+    },
+    {
+     "time": 20,
+     "bigBlind": 160,
+     "smallBlind": 80
+    },
+    {
+     "time": 20,
+     "bigBlind": 200,
+     "smallBlind": 100
+    },
+    {
+     "time": 20,
+     "bigBlind": 300,
+     "smallBlind": 150
+    },
+    {
+     "time": 20,
+     "bigBlind": 400,
+     "smallBlind": 200
+    },
+    {
+     "time": 20,
+     "bigBlind": 600,
+     "smallBlind": 300
+    },
+    {
+     "time": 20,
+     "bigBlind": 800,
+     "smallBlind": 400
+    },
+    {
+     "time": 20,
+     "bigBlind": 1200,
+     "smallBlind": 600
+    },
+    {
+     "time": 20,
+     "bigBlind": 1600,
+     "smallBlind": 800
+    },
+    {
+     "time": 20,
+     "bigBlind": 2000,
+     "smallBlind": 1000
+    },
+    {
+     "time": 20,
+     "bigBlind": 3000,
+     "smallBlind": 1500
+    },
+    {
+     "time": 20,
+     "bigBlind": 4000,
+     "smallBlind": 2000
+    },
+    {
+     "time": 20,
+     "bigBlind": 6000,
+     "smallBlind": 3000
+    }
+   ],
+   "name": "Standard Low"
+  }
+ ],
+ "THEMES": [
+  {
+   "textColor": 16777215,
+   "bottomGradient": 1192514,
+   "topGradient": 0.0,
+   "buttonHalo": 0.0,
+   "buttonColor": 0.0
+  },
+  {
+   "textColor": 16777215,
+   "bottomGradient": 4349040,
+   "topGradient": 1188398,
+   "buttonHalo": 4237812,
+   "buttonColor": 15725557
+  },
+  {
+   "textColor": 10944510,
+   "bottomGradient": 39048,
+   "topGradient": 85065,
+   "buttonHalo": 48311,
+   "buttonColor": 11337726
+  },
+  {
+   "textColor": 16636915,
+   "bottomGradient": 13453695,
+   "topGradient": 12789860,
+   "buttonHalo": 16735391,
+   "buttonColor": 16769783
+  },
+  {
+   "textColor": 16766279,
+   "bottomGradient": 11283712,
+   "topGradient": 8917511,
+   "buttonHalo": 16729088,
+   "buttonColor": 16755035
+  }
+ ],
+ "helpArray": [
+  "<FONT FACE='standard 07_65'>Creating a tournament</FONT>\nTo create a new tournament:\n\n1. Click on <FONT FACE='standard 07_65'>Create</FONT> to create a tournament from scratch or Select a tournament in the list and click on <FONT FACE='standard 07_65'>Copy</FONT> to create a new, similar tournament.\n\n2. Change the settings to suit your requirements. All settings are described under <FONT FACE='standard 07_65'>Tournament settings.</FONT>\n\n3. Click <FONT FACE='standard 07_65'>Save</FONT>. The tournament is added in the list.",
+  "<FONT FACE='standard 07_65'>Editing a tournament</FONT>\nTo edit an existing tournament, select it in the tournament list (1) and click <FONT FACE='standard 07_65'>Edit</FONT> (2). Change the settings to suit your requirements. All settings are described under <FONT FACE='standard 07_65'>Tournament settings</FONT>.\n\nIf you want to change a tournament while keeping the old one, copy the existing tournament by selecting it in the list and clicking <FONT FACE='standard 07_65'>Copy</FONT> (3). Then edit the copy by clicking <FONT FACE='standard 07_65'>Edit</FONT> (2) and changing the settings.",
+  "<FONT FACE='standard 07_65'>Running a tournament</FONT>\nTo run a tournament:\n\n1. Select a tournament in the list.\n\n2. Click on <FONT FACE='standard 07_65'>Start Tournament</FONT>. The clock gets ready to run.\n\n3. To start the tournament, click on the Play button. The tournament starts. Remove eliminated players, register re-buys, and so on with the buttons as described under Button descriptions.\n\n4. If you need to edit a running tournament click on Edit to access the tournament settings.\n\n5. When the tournament is over, click on End to end the tournament and display the tournament results.\n\nNote: To get back to the starting screen with the list of tournaments, the Create and Copy buttons etc, click End and use the button to close the tournament results.\n\nNote: If the tournament is not over when the last level ends, the clock will continue ticking on the last blinds level until you click End.\n\n<FONT FACE='standard 07_65'>Sound signals</FONT>\n\nThe end of a level is indicated by a series of sound signals:\n\n+  Signal one minute before level ends\n+  Countdown during the last seconds\n+  Signal when the level ends\n\nThe sounds can be turned on and off by toggling the sound button (next to the help button in the top right corner).\n\n",
+  "<FONT FACE='standard 07_65'>Tournament Settings</FONT>\nA tournament is defined by the following settings:\n\n<FONT FACE='standard 07_65'>1. Title</FONT>\nThe name of the tournament.\n\n<FONT FACE='standard 07_65'>2. Buy-In, Re-Buy and Add-On</FONT>\nThe cost of buy-in, re-buys, and add-ons, as well as how many chips players receive for each one of them.\n\n<FONT FACE='standard 07_65'>3. Add cash</FONT>\nSpecifies if any money is added to the prize pool, other than the buy-ins, re-buys, and add-ons\n\n<FONT FACE='standard 07_65'>4. Currency</FONT>\nThe currency used in the tournament\n\n<FONT FACE='standard 07_65'>5. Players</FONT>\nSpecifies the number of players that will participate in the tournament. You can change this number later on, even after the tournament has started.\n\n<FONT FACE='standard 07_65'>6. Payout structure</FONT>\nSpecifies how much each winning player will receive, as a percentage of the prize pool. You can define your own structure or chose one of the preset ones. When you click on a preset, the payout structure is calculated depending on the number of players you specified. The presets for ten players are not the same as the presets for 50 players, and so on. The <FONT FACE='standard 07_65'>Total</FONT> percentage must equal 100.\n\n<FONT FACE='standard 07_65'>7. Blinds structure</FONT>\nSpecifies each level in the tournament: blinds, ante, level duration in minutes, the length of the break after the level (can be zero), and the duration of the re-buy period (if any). You can specify your own structure or chose one of the preset ones.\n\n",
+  "<FONT FACE='standard 07_65'>Button descriptions\n\n1. Entries</FONT>\nNumber of players that entered the tournament.\n\n<FONT FACE='standard 07_65'>2. Players</FONT>\nNumber of players left in the tournament. Click on <FONT FACE='standard 07_65'>–</FONT> each time a player is eliminated.\n\n<FONT FACE='standard 07_65'>3. Re-Buys</FONT>\nNumber of re-buys done. Click on <FONT FACE='standard 07_65'>+</FONT> each time a player makes a re-buy.\n\n<FONT FACE='standard 07_65'>4. Add-Ons</FONT>\nNumber of add-ons done. Click on <FONT FACE='standard 07_65'>+</FONT> for each player that takes an add-on.\n\n<FONT FACE='standard 07_65'>5. Start/Pause</FONT>\nClick to start or pause the clock. You can also use the <FONT FACE='standard 07_65'>Space</FONT> bar.\n\n<FONT FACE='standard 07_65'>6. Level</FONT>\nSteps the current level of blinds up or down. When you change level, the time is reset. You can use the <FONT FACE='standard 07_65'>Time</FONT> slider to adjust the remaining time for the current level.\n\n<FONT FACE='standard 07_65'>7. Time</FONT>\nAdjusts the remaining time for the current level.\n\n"
+ ]
+}
