@@ -221,6 +221,12 @@ td input.pts{width:70px}
 @media (max-width:860px){.deck{position:sticky;bottom:calc(0px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 -6px 18px rgba(0,0,0,.12)}}
 .mode{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
 .mode.on{color:var(--accent)}
+.elims{border-color:var(--gold);box-shadow:inset 0 3px 0 var(--gold);flex:1;display:flex;flex-direction:column;min-height:160px}
+.elims .elist{flex:1;overflow:auto;margin-top:8px;gap:8px}
+.elims .elist li{font-size:18px;padding:6px 8px;background:var(--panel-2);border-radius:8px;align-items:center}
+.elims .elist li b{font-size:22px;color:var(--gold);flex-basis:44px}
+.tv .elims .elist li{font-size:clamp(18px,2vw,28px)}
+.tv .elims .elist li b{font-size:1.2em;flex-basis:56px}
 </style>
 
 <div id="app"></div>
@@ -504,6 +510,7 @@ function settingsHtml(d){const tot=totalPct(d.winStruct);return `<div style="dis
   </section>
   <section class="panel" style="display:grid;gap:14px">
     <div class="row spread"><h3>Premiação</h3><span class="total ${tot===100?'ok':'bad'} num">Total ${fmtN(tot)}%</span></div>
+    <label class="check"><input type="checkbox" id="fShowPrizes" ${d.showPrizes?'checked':''}> Mostrar premiação no relógio e na TV (só para rodadas com prêmio)</label>
     <p class="note" style="margin:0">Porcentagem do pote para cada colocação. Os presets escolhem a tabela pelo número de jogadores (${d.numPlayers}). O total precisa fechar em 100%. Na hora de fechar a partida você pode ajustar o prêmio de cada jogador.</p>
     <div class="toolbar">${PRESETS.win.map((p,i)=>`<button class="btn small" data-wpreset="${i}">Preset ${p.name}</button>`).join('')}<button class="btn small" id="wAdd" ${d.winStruct.length>=MAX_WIN?'disabled':''}>+ Posição</button><button class="btn small" id="wEven" ${d.winStruct.length?'':'disabled'}>Ajustar para 100%</button><button class="btn small" id="wClear" ${d.winStruct.length?'':'disabled'}>Limpar</button></div>
     ${d.winStruct.length?`<div class="twrap"><table><thead><tr><th>Colocação</th><th>% do pote</th><th>Prêmio estimado</th><th></th></tr></thead><tbody>${d.winStruct.map((p,i)=>`<tr><td>${ord(i+1)}</td><td><input type="number" inputmode="decimal" min="0" step="0.05" data-w="${i}" value="${esc(p)}"></td><td class="num">${money(d,Math.floor(totalCash(d,{reBuys:0,addOns:0})*(+p||0)/100))}</td><td><span class="rowbtns"><button data-wins="${i}" title="Inserir abaixo">+</button><button data-wdel="${i}" title="Excluir">×</button></span></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Nenhuma posição premiada.</p>'}
@@ -514,7 +521,7 @@ function bindSettings(root,d){const num=(id,k,int)=>on(root,'#'+id,'input',e=>{d
   on(root,'#fCur','input',e=>{d.currency=e.target.value});
   on(root,'#fPlayers','change',e=>{d.numPlayers=Math.max(1,Math.round(+e.target.value||1));render()});
   num('fBuyCost','buyInCost');num('fBuyChips','buyInChips');num('fRbCost','reBuyCost');num('fRbChips','reBuyChips');num('fRbLevel','reBuyLevel',true);num('fAoCost','addOnCost');num('fAoChips','addOnChips');num('fAc','addCash');
-  on(root,'#fRbOn','change',e=>{d.reBuyEnabled=e.target.checked;render()});on(root,'#fAoOn','change',e=>{d.addOnEnabled=e.target.checked;render()});on(root,'#fAcOn','change',e=>{d.addCashEnabled=e.target.checked;render()});
+  on(root,'#fShowPrizes','change',e=>{d.showPrizes=e.target.checked});on(root,'#fRbOn','change',e=>{d.reBuyEnabled=e.target.checked;render()});on(root,'#fAoOn','change',e=>{d.addOnEnabled=e.target.checked;render()});on(root,'#fAcOn','change',e=>{d.addCashEnabled=e.target.checked;render()});
   on(root,'[data-wpreset]','click',e=>{d.winStruct=winPresetFor(+e.currentTarget.dataset.wpreset,d.numPlayers);render()});
   on(root,'#wAdd','click',()=>{d.winStruct.push(0);render()});
   on(root,'#wEven','click',()=>{d.winStruct=evenOut(d.winStruct);render()});
@@ -619,8 +626,10 @@ function clockStageHtml(t,L,tv){const hasRoster=L.roster.length>0;return `<div c
         <div class="stat"><span class="eyebrow">Fichas em jogo</span><span class="v num" id="sChips">0</span><span class="note num" id="sChipsNote"></span></div>
         <div class="stat"><span class="eyebrow">Stack médio</span><span class="v num" id="sAvg">0</span></div>
       </div>
-      <div class="prizes"><div class="row spread"><span class="eyebrow">Premiação</span><span class="note num" id="pPage"></span></div><ol id="pList"></ol></div>
-      ${hasRoster?`<div class="prizes" style="flex:0 0 auto;min-height:0"><div class="row spread"><span class="eyebrow">Eliminações</span><span class="note num" id="eCount"></span></div><ul class="elist" id="eList"></ul></div>`:''}
+      <div class="prizes elims" id="eBox"><div class="row spread"><span class="eyebrow" style="color:var(--gold)">Eliminações</span><span class="note num" id="eCount"></span></div>
+        ${tv?'':`<div class="row" style="margin-top:8px"><button class="btn" id="cElim" style="border-color:var(--gold);background:var(--gold-soft);flex:1">☠ Registrar eliminação</button>${hasRoster?`<button class="btn small ghost" id="cUndo" title="Desfazer última eliminação">Desfazer</button>`:''}</div>`}
+        <ul class="elist" id="eList"></ul></div>
+      ${t.showPrizes?`<div class="prizes" style="flex:0 0 auto;min-height:0"><div class="row spread"><span class="eyebrow">Premiação</span><span class="note num" id="pPage"></span></div><ol id="pList"></ol></div>`:''}
     </aside>
   </div>`}
 function headHtml(t,L,tv){return `<header class="chead">
@@ -641,12 +650,12 @@ function viewClock(){const L=S.live,t=tById(L.tid);const root=h(`<div class="clo
   <div class="deck">
     <div class="row"><button class="btn" data-act="level-" aria-label="Round anterior">◀ Round</button><button class="btn" data-act="level+" aria-label="Próximo round">Round ▶</button></div>
     <div class="mid"><span class="lab">Tempo</span><input type="range" id="cSlider" min="0" max="100" value="0" aria-label="Ajustar tempo restante"><span class="lab num" id="cSliderLab"></span></div>
-    <div class="row"><button class="btn primary play" id="cPlay">${L.running?'❚❚ Pausar':'▶ Iniciar'}</button><button class="btn" id="cElim" style="border-color:var(--gold)">☠ Eliminação</button><button class="btn" id="cEdit">Editar</button><button class="btn danger" id="cEnd">Encerrar</button></div>
+    <div class="row"><button class="btn primary play" id="cPlay">${L.running?'❚❚ Pausar':'▶ Iniciar'}</button><button class="btn" id="cEdit">Editar</button><button class="btn danger" id="cEnd">Encerrar</button></div>
   </div>
 </div>`);
   bindHead(root);
   on(root,'[data-act]','click',e=>act(e.currentTarget.dataset.act));
-  on(root,'#cPlay','click',togglePlay);on(root,'#cElim','click',()=>{if(S.live.roster.length)elimDialog();else rosterDialog()});on(root,'#cEdit','click',()=>editT('settings'));on(root,'#cEnd','click',endT);
+  on(root,'#cPlay','click',togglePlay);on(root,'#cElim','click',()=>{if(S.live.roster.length)elimDialog();else rosterDialog()});on(root,'#cUndo','click',undoElimDialog);on(root,'#cEdit','click',()=>editT('settings'));on(root,'#cEnd','click',endT);
   const sl=root.querySelector('#cSlider');
   sl.addEventListener('pointerdown',()=>{sliderHeld=true});sl.addEventListener('pointerup',()=>{sliderHeld=false});sl.addEventListener('pointercancel',()=>{sliderHeld=false});sl.addEventListener('keydown',()=>{sliderHeld=true});sl.addEventListener('keyup',()=>{sliderHeld=false});
   let slideT=null;
@@ -695,7 +704,7 @@ function updateClockFields(){const L=S.live;if(!L)return;const t=tById(L.tid);if
   setText('sPot',money(t,totalCash(t,L)));setText('sChips',fmtN(totalChips(t,L)));setText('sChipsNote',fmtN(t.buyInChips)+' × '+t.numPlayers+(t.reBuyEnabled&&L.reBuys?' + '+L.reBuys+' re-buy':'')+(t.addOnEnabled&&L.addOns?' + '+L.addOns+' add-on':''));setText('sAvg',fmtN(Math.floor(totalChips(t,L)/Math.max(1,L.players))));
   const pz=prizes(t,L);const pages=Math.max(1,Math.ceil(pz.length/PRIZE_PAGE));const pg=pz.length?Math.floor(now/PRIZE_SECS)%pages:0;const list=document.getElementById('pList');
   if(list){const html=pz.length?pz.slice(pg*PRIZE_PAGE,pg*PRIZE_PAGE+PRIZE_PAGE).map((v,i)=>`<li><span>${ord(pg*PRIZE_PAGE+i+1)}</span><span>${money(t,v)}</span></li>`).join(''):'<li class="muted" style="font-size:16px;font-weight:400">Defina a premiação em Editar.</li>';if(list.innerHTML!==html)list.innerHTML=html;setText('pPage',pages>1?(pg+1)+'/'+pages:'')}
-  const el=document.getElementById('eList');if(el){const n=L.roster.length;const html=L.elims.length?L.elims.slice(-4).reverse().map(e=>{const i=L.elims.indexOf(e);return `<li><b>${ord(n-i)}</b><span>${esc(pName(e.pid))}${e.byPid?' <span class="muted">por</span> '+esc(pName(e.byPid)):''}${e.rank||e.cards?' <span class="muted">·</span> <span class="cards">'+esc(e.rank)+(e.cards?' '+cardsHtml(e.cards):'')+'</span>':''}</span></li>`}).join(''):'<li class="muted" style="font-size:14px">Nenhuma ainda.</li>';if(el.innerHTML!==html)el.innerHTML=html;setText('eCount',L.elims.length+' de '+(n-1))}
+  const el=document.getElementById('eList');if(el){const n=L.roster.length;let html;if(!n)html='<li class="muted" style="font-size:15px">Partida sem nomes. Clique em Registrar eliminação para escolher os jogadores.</li>';else if(!L.elims.length)html='<li class="muted" style="font-size:15px">Ninguém eliminado ainda · '+n+' na mesa</li>';else html=L.elims.slice().reverse().map(e=>{const i=L.elims.indexOf(e);return `<li><b>${ord(n-i)}</b><span><b style="font-family:inherit;font-size:inherit;color:inherit">${esc(pName(e.pid))}</b>${e.byPid?' <span class="muted">por</span> '+esc(pName(e.byPid)):''}${e.rank||e.cards?' <span class="muted">·</span> <span class="cards">'+esc(e.rank)+(e.cards?' '+cardsHtml(e.cards):'')+'</span>':''}</span></li>`}).join('');if(el.innerHTML!==html)el.innerHTML=html;setText('eCount',n?L.elims.length+' de '+(n-1)+' · '+alive(L).length+' na mesa':'')}
   const sl=document.getElementById('cSlider');if(sl&&ph){if(ph.kind==='overtime'){sl.disabled=true;setText('cSliderLab','O/T')}else{sl.disabled=false;const elp=now-ph.start;if(String(sl.max)!==String(ph.len))sl.max=ph.len;if(!sliderHeld&&+sl.value!==elp)sl.value=elp;setText('cSliderLab','falta '+fmtClock(ph.remaining))}}
   const play=document.getElementById('cPlay');if(play){const txt=L.running?'❚❚ Pausar':'▶ Iniciar';if(play.textContent!==txt)play.textContent=txt}
   if(ph&&lastPhaseKey===null)lastPhaseKey=ph.level+':'+ph.kind}
