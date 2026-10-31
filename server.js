@@ -131,7 +131,7 @@ const server = http.createServer(async (req, res) => {
       res.write('retry: 2000\n\n');
       res.write('data: ' + JSON.stringify({ kind: 'hello', rev }) + '\n\n');
       clients.add(res);
-      const ping = setInterval(() => { try { res.write(': ping\n\n'); } catch (e) {} }, 25000);
+      const ping = setInterval(() => { try { res.write('data: {"kind":"ping"}\n\n'); } catch (e) {} }, 25000);
       req.on('close', () => { clients.delete(res); clearInterval(ping); });
       return;
     }
