@@ -213,3 +213,20 @@ td input.pts{width:70px}
 .elims .elist li b{font-size:22px;color:var(--gold);flex-basis:44px}
 .tv .elims .elist li{font-size:clamp(18px,2vw,28px)}
 .tv .elims .elist li b{font-size:1.2em;flex-basis:56px}
+/* season tables */
+table.season th.grp{text-align:center;border-bottom:1px solid var(--line)}
+table.season th.pc,table.season td.pc{padding:6px 5px;text-align:center;min-width:30px}
+table.season td.zero{color:var(--muted);opacity:.45}
+table.matrix th,table.matrix td{text-align:center;vertical-align:middle}
+table.matrix th:first-child,table.matrix td:first-child{position:sticky;left:0;background:var(--panel);z-index:1;text-align:left}
+table.matrix th.rd{min-width:84px;padding:6px 4px;line-height:1.15}
+table.matrix th.rd .champ{font-size:11px;color:var(--gold);letter-spacing:.04em}
+table.matrix td.cell{padding:4px 6px;min-width:84px}
+table.matrix td.cell .pts{font-family:var(--display);font-size:20px;font-weight:700;line-height:1}
+table.matrix td.cell .ko{font-size:11px;color:var(--muted);letter-spacing:.08em;min-height:14px}
+table.matrix td.cell .pos{font-size:12px;color:var(--gold);font-weight:600}
+table.matrix td.cell.win{background:var(--gold-soft)}
+table.matrix td.cell.abs .pts{color:var(--muted);opacity:.5;font-size:16px}
+table.matrix td.tot{font-family:var(--display);font-size:20px;font-weight:700;color:var(--accent)}
+table.matrix tfoot td{background:var(--panel-2);font-weight:600;border-top:1px solid var(--line)}
+table.matrix td.absn{color:var(--danger)}
