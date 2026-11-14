@@ -230,5 +230,5 @@ table.matrix td.cell.abs .pts{color:var(--muted);opacity:.5;font-size:16px}
 table.matrix td.tot{font-family:var(--display);font-size:20px;font-weight:700;color:var(--accent)}
 table.matrix tfoot td{background:var(--panel-2);font-weight:600;border-top:1px solid var(--line)}
 table.matrix td.absn{color:var(--danger)}
-/* próximo round: 2 pt menor e em cinza */
-#cNext{font-size:calc(clamp(28px,5vw,56px) - 2pt);color:var(--muted)}
+/* próximo round: metade do tamanho anterior, em cinza */
+#cNext{font-size:calc((clamp(28px,5vw,56px) - 2pt) / 2);color:var(--muted)}
