@@ -265,7 +265,13 @@ function uid(){return Math.random().toString(36).slice(2,10)+Date.now().toString
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function today(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function winPresetFor(presetIdx,n){const tiers=PRESETS.win[presetIdx].tiers;let t=tiers.find(x=>n<=x.max)||tiers[tiers.length-1];return t.pct.slice()}
-function defaultScoring(){return{pos:[10,7,5,3,2],base:1,ko:1}}
+const OFFICIAL_POS=[12,10,8,7,6,5,4,3,2,1];
+function defaultScoring(){return{pos:OFFICIAL_POS.slice(),base:0,ko:1}}
+/* aplica a pontuação oficial da Confraria uma única vez por base de dados (settings.scoringV) */
+const SCORING_V=2;
+function sameScoring(a,b){return !!a&&!!b&&JSON.stringify(a.pos)===JSON.stringify(b.pos)&&(+a.base||0)===(+b.base||0)&&(+a.ko||0)===(+b.ko||0)}
+function recalcPoints(g){g.results.forEach(r=>{const kos=g.results.filter(x=>r.pid&&x.koBy===r.pid).length;r.points=pointsFor(g.scoring,r.pos,kos)})}
+function migrateScoring(){if(!ready||!canWrite||(+S.settings.scoringV||0)>=SCORING_V)return;const off=defaultScoring();let nt=0,ng=0;S.tournaments.forEach(t=>{if(!sameScoring(t.scoring,off)){t.scoring=defaultScoring();putT(t);nt++}});S.games.forEach(g=>{if(!sameScoring(g.scoring,off)){g.scoring=defaultScoring();recalcPoints(g);putG(g);ng++}});S.settings=Object.assign({},S.settings,{scoringV:SCORING_V});putSettings();if(nt||ng)toast('Pontuação oficial aplicada: '+nt+' torneio(s) e '+ng+' rodada(s) recalculada(s).');requestRender()}
 /* gerador de estrutura de blinds: progressão padrão de salas a partir do SB inicial */
 const LADDER=[10,15,25,50,75,100,150,200,300,400,500,600,800,1000,1500,2000,3000,4000,5000,6000,8000,10000,15000,20000,30000,40000,50000,60000,80000,100000];
 function genBlinds(o){const sb0=Math.max(1,Math.round(+o.sb||100)),bb0=Math.max(1,Math.round(+o.bb||sb0*2));const n=Math.min(MAX_LEVELS,Math.max(1,Math.round(+o.rounds||20)));const rep=Math.max(1,Math.round(+o.repeatFirst||1));const mins=Math.max(1,Math.round(+o.minutes||20));const anteFrom=Math.max(0,Math.round(+o.anteFrom||0));const brkEvery=Math.max(0,Math.round(+o.breakEvery||0)),brkMin=Math.max(0,Math.round(+o.breakMin||0));
@@ -314,7 +320,7 @@ function liveStatus(){if(!SRV)return '';const ok=es&&es.readyState===1&&Date.now
 document.addEventListener('visibilitychange',()=>{if(SRV&&document.visibilityState==='visible'){srvRefresh();syncClock();if(!es||es.readyState===2)openEvents()}});
 async function probeServer(){if(!/^https?:$/.test(location.protocol))return null;try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch('/api/state',{cache:'no-store',signal:c.signal});clearTimeout(t);if(!r.ok)return null;const o=await r.json();return o&&Array.isArray(o.tournaments)?o:null}catch(e){return null}}
 function toast(msg){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true},3500)}
-function markReady(){if(ready)return;if(mode==='shared'&&!(firstSnap.t&&firstSnap.p&&firstSnap.g&&firstSnap.l&&firstSnap.s))return;ready=true;if(S.live&&view==='home'&&location.hash!=='#tv')view='clock';requestRender()}
+function markReady(){if(ready)return;if(mode==='shared'&&!(firstSnap.t&&firstSnap.p&&firstSnap.g&&firstSnap.l&&firstSnap.s))return;ready=true;if(S.live&&view==='home'&&location.hash!=='#tv')view='clock';requestRender();setTimeout(migrateScoring,500)}
 function applyLive(l){const prev=S.live;S.live=l;if(l&&(!prev||prev.tid!==l.tid))lastPhaseKey=null;if(view==='clock'||view==='tv'){const sig=l?[l.tid,l.roster.join(','),l.elims.length,l.dealer,l.running].join('|'):'none';if(sig!==liveSig){liveSig=sig;requestRender()}else updateClockFields()}else if(l&&!prev&&ready&&!dialog&&view==='home'){view='clock';requestRender()}else if(!l&&prev&&(view==='close'))requestRender();else requestRender();syncWake()}
 let liveSig='';
 function subscribeAll(){const err=e=>{if(e&&e.code==='revoked'){toast('Conexão com os dados compartilhados encerrada.')}};
@@ -325,8 +331,8 @@ function subscribeAll(){const err=e=>{if(e&&e.code==='revoked'){toast('Conexão 
   DB.doc('live/current').onSnapshot(s=>{const l=s.exists?s.data():null;firstSnap.l=true;const was=ready;markReady();if(was)applyLive(l);else S.live=l},err)}
 async function initStore(){loadUI();const use=window.claude&&window.claude.use;if(use){try{DB=await window.claude.use('db')}catch(e){DB=null}}
   if(DB){mode='shared';subscribeAll();window.claude.use('assets').then(a=>{ASSETS=a;if(dialog&&dialog.league)render()}).catch(()=>{});window.claude.use('user').then(u=>{USER=u;if(u){u.can('data.write').then(v=>{if(v===false){canWrite=false;canWriteKnown=true;requestRender()}else if(v===true){canWriteKnown=true}}).catch(()=>{})}}).catch(()=>{});setTimeout(()=>{if(!ready){toast('Os dados compartilhados estão demorando a carregar…')}},8000)}
-  else if(!use&&(await probeServer().then(o=>{if(!o)return false;mode='server';SRV=true;applyServerState(o);syncClock();ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake();openEvents();return true}))){/* servidor próprio */}
-  else{const saved=loadLocal();if(saved){S.tournaments=saved.tournaments||[];S.players=saved.players||[];S.games=saved.games||[];S.live=saved.live||null;if(saved.settings)S.settings=Object.assign(S.settings,saved.settings);S.tournaments.forEach(t=>{if(!t.scoring)t.scoring=defaultScoring()});if(S.live){if(!tById(S.live.tid))S.live=null;else{if(!S.live.roster)S.live.roster=[];if(!S.live.elims)S.live.elims=[]}}}else{const t=seed();S.tournaments=[t];UI.selectedId=t.id;saveLocal()}ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake()}}
+  else if(!use&&(await probeServer().then(o=>{if(!o)return false;mode='server';SRV=true;applyServerState(o);syncClock();ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake();openEvents();migrateScoring();return true}))){/* servidor próprio */}
+  else{const saved=loadLocal();if(saved){S.tournaments=saved.tournaments||[];S.players=saved.players||[];S.games=saved.games||[];S.live=saved.live||null;if(saved.settings)S.settings=Object.assign(S.settings,saved.settings);S.tournaments.forEach(t=>{if(!t.scoring)t.scoring=defaultScoring()});if(S.live){if(!tById(S.live.tid))S.live=null;else{if(!S.live.roster)S.live.roster=[];if(!S.live.elims)S.live.elims=[]}}}else{const t=seed();S.tournaments=[t];UI.selectedId=t.id;saveLocal()}ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake();migrateScoring()}}
 function localBackup(){if(mode==='local')return null;const o=loadLocal();return o&&o.tournaments&&o.tournaments.length?o:null}
 
 /* ---------- tournament math (same rules as the original clock) ---------- */
@@ -579,7 +585,7 @@ function scoringHtml(d){const s=d.scoring;if(!s._cleared)extendScoring(d);const 
   <section class="panel" style="display:grid;gap:14px">
     <div class="row spread"><h3>Pontos por colocação</h3><span class="note num">${S.players.length} jogador${S.players.length===1?'':'es'} cadastrado${S.players.length===1?'':'s'} · ${s.pos.length} colocaç${s.pos.length===1?'ão':'ões'}</span></div>
     <p class="note" style="margin:0">Uma linha para cada colocação possível: a tabela é completada automaticamente até o número de jogadores cadastrados (${n}), em ordem decrescente, e você ajusta os pontos de cada lugar. Colocações além da lista rendem só os pontos de participação.</p>
-    <div class="toolbar"><button class="btn small" id="scAdd" ${s.pos.length>=MAX_WIN?'disabled':''}>+ Colocação</button><button class="btn small" id="scPreset2">Preset decrescente (${n} … 1)</button><button class="btn small" id="scPreset1">Preset 10 / 7 / 5 / 3 / 2 + 1</button><button class="btn small" id="scClear" ${s.pos.length?'':'disabled'}>Limpar</button></div>
+    <div class="toolbar"><button class="btn small" id="scAdd" ${s.pos.length>=MAX_WIN?'disabled':''}>+ Colocação</button><button class="btn small" id="scPreset2">Preset decrescente (${n} … 1)</button><button class="btn small primary" id="scPreset1">Oficial 12 / 10 / 8 / 7 / 6 / 5 / 4 / 3 / 2 / 1</button><button class="btn small" id="scClear" ${s.pos.length?'':'disabled'}>Limpar</button></div>
     ${s.pos.length?`<div class="twrap"><table><thead><tr><th>Colocação</th><th>Pontos</th><th></th></tr></thead><tbody>${s.pos.map((p,i)=>`<tr><td>${ord(i+1)}</td><td><input type="number" inputmode="decimal" step="0.5" data-sp="${i}" value="${esc(p)}"></td><td><span class="rowbtns"><button data-spdel="${i}" title="Excluir">×</button></span></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Nenhuma colocação pontua.</p>'}
   </section>
   <section class="panel" style="display:grid;gap:14px">
@@ -590,7 +596,7 @@ function scoringHtml(d){const s=d.scoring;if(!s._cleared)extendScoring(d);const 
 </div>`}
 function bindScoring(root,d){const s=d.scoring;
   on(root,'#scAdd','click',()=>{s.pos.push(Math.max(0,(+s.pos[s.pos.length-1]||1)-1));delete s._cleared;render()});
-  on(root,'#scPreset1','click',()=>{s.pos=[10,7,5,3,2];extendScoring(d);render()});
+  on(root,'#scPreset1','click',()=>{s.pos=OFFICIAL_POS.slice();s.base=0;s.ko=1;render()});
   on(root,'#scPreset2','click',()=>{const n=scoringTarget(d);s.pos=Array.from({length:n},(_,i)=>n-i);render()});
   on(root,'#scClear','click',()=>{s.pos=[];s._cleared=true;render()});
   on(root,'[data-sp]','change',e=>{s.pos[+e.target.dataset.sp]=+e.target.value||0;render()});

@@ -28,7 +28,7 @@ MONTHS = {'jan': 1, 'fev': 2, 'mar': 3, 'abr': 4, 'mai': 5, 'jun': 6,
 # nomes como estão no app (a planilha usa caixa alta, sem acento)
 DISPLAY = {'ROMULO': 'Rômulo'}
 
-SCORING = {'pos': [12, 10, 8, 7, 6, 5, 4, 3, 2, 0], 'base': 0, 'ko': 1}
+SCORING = {'pos': [12, 10, 8, 7, 6, 5, 4, 3, 2, 1], 'base': 0, 'ko': 1}
 
 
 def strip(s):
