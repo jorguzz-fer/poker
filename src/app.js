@@ -63,8 +63,10 @@ let srvRev=0,es=null;
 function srvRefresh(){return fetch('/api/state',{cache:'no-store'}).then(r=>r.json()).then(o=>{applyServerState(o);requestRender()}).catch(()=>{})}
 let lastEvt=0;
 function openEvents(){if(es)es.close();es=new EventSource('/api/events');lastEvt=Date.now();es.onmessage=ev=>{lastEvt=Date.now();let e;try{e=JSON.parse(ev.data)}catch(x){return}if(e.kind==='ping')return;if(e.kind==='hello'){if(e.rev!==srvRev)srvRefresh();return}srvRev=e.rev;if(e.col==='live'){const l=e.kind==='set'?e.data:null;if(l){if(!l.roster)l.roster=[];if(!l.elims)l.elims=[]}applyLive(l);return}if(e.col==='settings'){const ns=Object.assign({},S.settings,e.data||{});if(JSON.stringify(ns)===JSON.stringify(S.settings))return;S.settings=ns;requestRender();return}const arr=S[e.col];if(!arr)return;const i=arr.findIndex(x=>x.id===e.id);if(e.kind==='set'&&i>=0&&JSON.stringify(arr[i])===JSON.stringify(e.data))return;if(e.kind==='del'&&i<0)return;if(e.kind==='set'){if(!e.data.scoring&&e.col==='tournaments')e.data.scoring=defaultScoring();if(i>=0)arr[i]=e.data;else arr.push(e.data);if(e.col==='tournaments')arr.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0))}else if(i>=0)arr.splice(i,1);if(!(e.col==='games'&&view==='close'))requestRender()};es.onerror=()=>{lastEvt=Math.min(lastEvt,Date.now()-45000)}}
-setInterval(()=>{if(!SRV||document.visibilityState==='hidden')return;if(Date.now()-lastEvt>70000){srvRefresh();openEvents()}},15000);
-document.addEventListener('visibilitychange',()=>{if(SRV&&document.visibilityState==='visible'){srvRefresh();if(!es||es.readyState===2)openEvents()}});
+setInterval(()=>{if(!SRV||document.visibilityState==='hidden')return;const quiet=Date.now()-lastEvt;if(quiet>40000){srvRefresh();openEvents()}else if(S.live&&(quiet>20000||!es||es.readyState!==1)){srvRefresh()}},5000);
+setInterval(()=>{if(SRV&&document.visibilityState!=='hidden'&&Date.now()-clockSyncedAt>60000)syncClock()},15000);
+function liveStatus(){if(!SRV)return '';const ok=es&&es.readyState===1&&Date.now()-lastEvt<40000;return ok?'● ao vivo':'○ reconectando…'}
+document.addEventListener('visibilitychange',()=>{if(SRV&&document.visibilityState==='visible'){srvRefresh();syncClock();if(!es||es.readyState===2)openEvents()}});
 async function probeServer(){if(!/^https?:$/.test(location.protocol))return null;try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch('/api/state',{cache:'no-store',signal:c.signal});clearTimeout(t);if(!r.ok)return null;const o=await r.json();return o&&Array.isArray(o.tournaments)?o:null}catch(e){return null}}
 function toast(msg){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true},3500)}
 function markReady(){if(ready)return;if(mode==='shared'&&!(firstSnap.t&&firstSnap.p&&firstSnap.g&&firstSnap.l&&firstSnap.s))return;ready=true;if(S.live&&view==='home'&&location.hash!=='#tv')view='clock';requestRender()}
@@ -78,7 +80,7 @@ function subscribeAll(){const err=e=>{if(e&&e.code==='revoked'){toast('Conexão 
   DB.doc('live/current').onSnapshot(s=>{const l=s.exists?s.data():null;firstSnap.l=true;const was=ready;markReady();if(was)applyLive(l);else S.live=l},err)}
 async function initStore(){loadUI();const use=window.claude&&window.claude.use;if(use){try{DB=await window.claude.use('db')}catch(e){DB=null}}
   if(DB){mode='shared';subscribeAll();window.claude.use('assets').then(a=>{ASSETS=a;if(dialog&&dialog.league)render()}).catch(()=>{});window.claude.use('user').then(u=>{USER=u;if(u){u.can('data.write').then(v=>{if(v===false){canWrite=false;canWriteKnown=true;requestRender()}else if(v===true){canWriteKnown=true}}).catch(()=>{})}}).catch(()=>{});setTimeout(()=>{if(!ready){toast('Os dados compartilhados estão demorando a carregar…')}},8000)}
-  else if(!use&&(await probeServer().then(o=>{if(!o)return false;mode='server';SRV=true;applyServerState(o);ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake();openEvents();return true}))){/* servidor próprio */}
+  else if(!use&&(await probeServer().then(o=>{if(!o)return false;mode='server';SRV=true;applyServerState(o);syncClock();ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake();openEvents();return true}))){/* servidor próprio */}
   else{const saved=loadLocal();if(saved){S.tournaments=saved.tournaments||[];S.players=saved.players||[];S.games=saved.games||[];S.live=saved.live||null;if(saved.settings)S.settings=Object.assign(S.settings,saved.settings);S.tournaments.forEach(t=>{if(!t.scoring)t.scoring=defaultScoring()});if(S.live){if(!tById(S.live.tid))S.live=null;else{if(!S.live.roster)S.live.roster=[];if(!S.live.elims)S.live.elims=[]}}}else{const t=seed();S.tournaments=[t];UI.selectedId=t.id;saveLocal()}ready=true;if(S.live&&location.hash!=='#tv')view='clock';render();syncWake()}}
 function localBackup(){if(mode==='local')return null;const o=loadLocal();return o&&o.tournaments&&o.tournaments.length?o:null}
 
@@ -93,7 +95,11 @@ function totalPct(ws){return Math.round(ws.reduce((a,b)=>a+(+b||0),0)*100)/100}
 function evenOut(ws){if(ws.length<1)return ws;if(ws.length===1)return[100];let tot=ws.reduce((a,b)=>a+(+b||0),0)||1;let r=ws.map(v=>Math.round((+v||0)*100/tot));let i=0;while(r.reduce((a,b)=>a+b,0)>100){r[r.length-1-i]--;i=(i+1)%r.length}i=0;while(r.reduce((a,b)=>a+b,0)<100){r[i]++;i=(i+1)%r.length}return r}
 function pointsFor(scoring,pos,kos){const sc=scoring||defaultScoring();return(pos>0&&sc.pos[pos-1]!=null?+sc.pos[pos-1]:0)+(+sc.base||0)+(+sc.ko||0)*(kos||0)}
 /* live time is anchored to a wall-clock moment, so every device derives the same value without periodic writes */
-function curTime(L){if(!L)return 0;return L.running&&L.lastTick?L.time+Math.max(0,Math.floor((Date.now()-L.lastTick)/1000)):L.time}
+/* relógio comum: no servidor próprio, todos os aparelhos usam a hora do servidor (diferença medida em /api/time) */
+let clockOffset=0,clockSyncedAt=0;
+function nowMs(){return Date.now()+clockOffset}
+async function syncClock(){if(!SRV)return;let best=null;for(let i=0;i<3;i++){try{const t0=Date.now();const r=await fetch('/api/time',{cache:'no-store'});const t1=Date.now();if(!r.ok)return;const o=await r.json();const rtt=t1-t0;if(!best||rtt<best.rtt)best={rtt,off:o.now-(t0+t1)/2}}catch(e){return}}if(best){clockOffset=Math.round(best.off);clockSyncedAt=Date.now();updateClockFields()}}
+function curTime(L){if(!L)return 0;return L.running&&L.lastTick?L.time+Math.max(0,Math.floor((nowMs()-L.lastTick)/1000)):L.time}
 
 /* ---------- formatting ---------- */
 function pad(n){return (n<10?'0':'')+n}
@@ -117,8 +123,8 @@ document.addEventListener('keydown',()=>{ac()},{capture:true});
 
 /* ---------- live clock ---------- */
 function startClock(t,roster,dealer){if(roster&&roster.length){t.numPlayers=roster.length;putT(t)}S.live={tid:t.id,time:0,running:false,lastTick:null,players:+t.numPlayers||1,reBuys:0,addOns:0,roster:roster||[],dealer:dealer||'',elims:[],date:today(),startedAt:Date.now()};UI.selectedId=t.id;saveUI();lastPhaseKey=null;prep=null;putLive();view='clock';render()}
-function togglePlay(){const L=S.live;if(!L)return;if(L.running){L.time=curTime(L);L.running=false;L.lastTick=null}else{L.running=true;L.lastTick=Date.now()}putLive();syncWake();render()}
-function setTime(sec){const L=S.live;L.time=Math.max(0,Math.round(sec));L.lastTick=L.running?Date.now():null;putLive()}
+function togglePlay(){const L=S.live;if(!L)return;if(L.running){L.time=curTime(L);L.running=false;L.lastTick=null}else{L.running=true;L.lastTick=nowMs()}putLive();syncWake();render()}
+function setTime(sec){const L=S.live;L.time=Math.max(0,Math.round(sec));L.lastTick=L.running?nowMs():null;putLive()}
 let lastShown=-1;
 function tick(){const L=S.live;if(!L||(view!=='clock'&&view!=='tv'))return;const t=tById(L.tid);if(!t)return;const now=curTime(L);if(now!==lastShown){const ph=phaseAt(t,now);if(ph){const key=ph.level+':'+ph.kind;if(lastPhaseKey!==null&&key!==lastPhaseKey&&L.running)sfx('change');lastPhaseKey=key;if(L.running&&ph.kind!=='overtime'&&lastShown>=0){if(ph.remaining===60)sfx('oneMinute');else if(ph.remaining>=1&&ph.remaining<=5)sfx('tick')}}lastShown=now}updateClockFields()}
 setInterval(tick,250);
@@ -403,7 +409,7 @@ function clockStageHtml(t,L,tv){const hasRoster=L.roster.length>0;return `<div c
 function headHtml(t,L,tv){return `<header class="chead">
     <div class="brand">${logoHtml()}<div class="name">${esc(t.name)}${L.dealer?` <span class="chip">Dealer: ${esc(L.dealer)}</span>`:''}</div></div>
     <div class="row">
-      <span class="lab num" title="Tempo total de jogo">Tempo total <b id="cElapsed" class="num">0:00:00</b></span>
+      <span class="lab" id="cSync"></span><span class="lab num" title="Tempo total de jogo">Tempo total <b id="cElapsed" class="num">0:00:00</b></span>
       <button class="btn icon ghost" id="cSound" title="${UI.sound?'Som ligado':'Som desligado'}" aria-label="Som">${UI.sound?'🔔':'🔕'}</button>
       <button class="btn icon ghost" id="cFull" title="Tela cheia" aria-label="Tela cheia">⛶</button>
       ${tv?`<button class="btn ghost exit" id="cExitTV">Sair do modo TV</button>`:`<button class="btn ghost" id="cTV">Modo TV</button><button class="btn ghost" id="cHome">Torneios</button>`}
@@ -427,7 +433,7 @@ function viewClock(){const L=S.live,t=tById(L.tid);const root=h(`<div class="clo
   const sl=root.querySelector('#cSlider');
   sl.addEventListener('pointerdown',()=>{sliderHeld=true});sl.addEventListener('pointerup',()=>{sliderHeld=false});sl.addEventListener('pointercancel',()=>{sliderHeld=false});sl.addEventListener('keydown',()=>{sliderHeld=true});sl.addEventListener('keyup',()=>{sliderHeld=false});
   let slideT=null;
-  sl.addEventListener('input',e=>{const ph=phaseAt(t,curTime(L));if(!ph||ph.kind==='overtime')return;const v=ph.start+(+e.target.value);L.time=v;L.lastTick=L.running?Date.now():null;clearTimeout(slideT);slideT=setTimeout(()=>putLive(),400);updateClockFields()});
+  sl.addEventListener('input',e=>{const ph=phaseAt(t,curTime(L));if(!ph||ph.kind==='overtime')return;const v=ph.start+(+e.target.value);L.time=v;L.lastTick=L.running?nowMs():null;clearTimeout(slideT);slideT=setTimeout(()=>putLive(),400);updateClockFields()});
   sl.addEventListener('change',()=>{sliderHeld=false});
   return root}
 function viewTV(){const L=S.live;const t=L&&tById(L.tid);if(!t){const yr=seasons()[0]||'';const rk=standings(seasonGames(yr)).rows.slice(0,8);const root=h(`<div class="tv"><div class="wait">${logoHtml()}<div><h2>${esc(S.settings.leagueName||DEFAULT_LEAGUE)}</h2><div class="motto">${esc(S.settings.motto||'')}</div></div><p class="muted" style="font-size:20px;margin:0">${ready?'Aguardando o início da partida…':'Conectando…'}</p>${rk.length?`<div class="twrap" style="width:100%;max-width:720px"><table><thead><tr><th>#</th><th>Ranking</th><th>Pontos</th><th>Vitórias</th></tr></thead><tbody>${rk.map((m,i)=>`<tr><td class="${i<3?'pod':''}">${i+1}</td><td style="text-align:left;font-weight:600">${esc(m.name)}</td><td class="num">${fmtN(m.points)}</td><td class="num">${m.wins}</td></tr>`).join('')}</tbody></table></div>`:''}<div class="row"><button class="btn icon ghost" id="cFull" title="Tela cheia" aria-label="Tela cheia">⛶</button><button class="btn ghost exit" id="cExitTV">Sair do modo TV</button></div></div></div>`);bindHead(root);return root}
@@ -443,8 +449,8 @@ function act(a){const L=S.live,t=tById(L.tid);if(!t)return;const now=curTime(L);
     case 'rebuy+':L.reBuys++;break;
     case 'addon-':L.addOns=Math.max(0,L.addOns-1);break;
     case 'addon+':L.addOns++;break;
-    case 'level-':{if(!ph)break;const sc=ph.sched;let v;if(ph.kind==='break'||ph.kind==='overtime'){v=ph.kind==='overtime'?sc[sc.length-1].start:sc[ph.level].start}else if(ph.level>0){const p=sc[ph.level-1];v=p.l.brk>0?p.playEnd:p.start}else v=0;L.time=v;L.lastTick=L.running?Date.now():null;lastPhaseKey=null;break}
-    case 'level+':{if(!ph)break;const sc=ph.sched;let v=null;if(ph.kind==='play'&&sc[ph.level].l.brk>0)v=sc[ph.level].playEnd;else if(ph.level<sc.length-1)v=sc[ph.level+1].start;if(v!=null){L.time=v;L.lastTick=L.running?Date.now():null}lastPhaseKey=null;break}
+    case 'level-':{if(!ph)break;const sc=ph.sched;let v;if(ph.kind==='break'||ph.kind==='overtime'){v=ph.kind==='overtime'?sc[sc.length-1].start:sc[ph.level].start}else if(ph.level>0){const p=sc[ph.level-1];v=p.l.brk>0?p.playEnd:p.start}else v=0;L.time=v;L.lastTick=L.running?nowMs():null;lastPhaseKey=null;break}
+    case 'level+':{if(!ph)break;const sc=ph.sched;let v=null;if(ph.kind==='play'&&sc[ph.level].l.brk>0)v=sc[ph.level].playEnd;else if(ph.level<sc.length-1)v=sc[ph.level+1].start;if(v!=null){L.time=v;L.lastTick=L.running?nowMs():null}lastPhaseKey=null;break}
   }
   if(tChanged)putT(t);putLive();updateClockFields()}
 
@@ -458,7 +464,7 @@ function removeEntryDialog(){const L=S.live,t=tById(L.tid);const al=alive(L);if(
 function setText(id,v){const e=document.getElementById(id);if(e&&e.textContent!==String(v))e.textContent=v}
 function updateClockFields(){const L=S.live;if(!L)return;const t=tById(L.tid);if(!t)return;const now=curTime(L);const ph=phaseAt(t,now);const box=document.getElementById('cBox');if(!box)return;
   const lv=ph?t.blindStruct[ph.level]:null;const nx=ph&&t.blindStruct[ph.level+1];
-  setText('cElapsed',fmtLong(now));
+  setText('cElapsed',fmtLong(now));setText('cSync',liveStatus());
   setText('cLevel',ph?'Round '+(ph.level+1)+' de '+t.blindStruct.length:'Sem rounds');
   box.classList.toggle('brk',!!ph&&ph.kind==='break');box.classList.toggle('ot',!!ph&&ph.kind==='overtime');
   if(!ph){setText('cTimer','--:--');setText('cPhase','')}

@@ -125,13 +125,14 @@ const server = http.createServer(async (req, res) => {
     if (p === '/healthz') return send(res, 200, 'ok');
     if (req.method === 'GET' && p === '/api/backup') { res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': 'attachment; filename="poker-backup-' + new Date().toISOString().slice(0, 10) + '.json"' }); const o = snapshot(); delete o.rev; delete o.pinRequired; delete o.persistent; return res.end(JSON.stringify(o)); }
     if (req.method === 'GET' && p === '/api/state') return send(res, 200, snapshot());
+    if (req.method === 'GET' && p === '/api/time') return send(res, 200, { now: Date.now() });
     if (req.method === 'GET' && p === '/api/ranking') return send(res, 200, q.ranking.all());
     if (req.method === 'GET' && p === '/api/events') {
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
       res.write('retry: 2000\n\n');
       res.write('data: ' + JSON.stringify({ kind: 'hello', rev }) + '\n\n');
       clients.add(res);
-      const ping = setInterval(() => { try { res.write('data: {"kind":"ping"}\n\n'); } catch (e) {} }, 25000);
+      const ping = setInterval(() => { try { res.write('data: {"kind":"ping"}\n\n'); } catch (e) {} }, 15000);
       req.on('close', () => { clients.delete(res); clearInterval(ping); });
       return;
     }
