@@ -174,7 +174,30 @@ document.addEventListener('pointerdown',()=>{pointerDown=true},{capture:true});
 document.addEventListener('pointerup',()=>{pointerDown=false;if(pendingRender)setTimeout(flushRender,0)},{capture:true});
 document.addEventListener('pointercancel',()=>{pointerDown=false},{capture:true});
 document.addEventListener('focusout',()=>{if(pendingRender&&!dialog)setTimeout(flushRender,80)});
-function render(){pendingRender=false;app.innerHTML='';let el;switch(view){case 'edit':el=draft?viewEdit():viewHome();break;case 'prep':el=prep&&tById(prep.tid)?viewPrep():viewHome();break;case 'clock':el=(S.live&&tById(S.live.tid))?viewClock(false):viewHome();break;case 'tv':el=viewTV();break;case 'close':el=closing?viewClose():viewHome();break;case 'game':el=S.games.find(g=>g.id===gameId)?viewGame():viewGames();break;case 'games':el=viewGames();break;case 'players':el=viewPlayers();break;case 'ranking':case 'season':el=viewSeason();break;case 'last':el=viewLast();break;default:view='home';el=viewHome()}app.appendChild(el);if(dialog){app.appendChild(viewDialog());if(dialog.onOpen)dialog.onOpen()}if(view==='clock'||view==='tv'){liveSig=S.live?[S.live.tid,S.live.roster.join(','),S.live.elims.length,S.live.dealer,S.live.running].join('|'):'none';updateClockFields()}}
+/* ---------- trava de segurança (só no celular): deslize para destravar, trava após 1 min sem toques ---------- */
+const IS_PHONE=(()=>{try{return matchMedia('(pointer: coarse)').matches&&Math.min(screen.width,screen.height)<=600}catch(e){return false}})();
+const LOCK_IDLE_MS=60000;
+let locked=true,lastAct=Date.now(),prevView=null,lastTap=0;
+function lockActive(){return IS_PHONE&&view==='clock'&&!!S.live}
+function syncLock(){const ov=document.getElementById('lockOv');if(lockActive()&&locked){if(!ov)document.body.appendChild(lockOverlay())}else if(ov)ov.remove()}
+function lockNow(){locked=true;syncLock()}
+function unlock(){locked=false;lastAct=Date.now();syncLock();try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
+function lockOverlay(){const ov=document.createElement('div');ov.id='lockOv';ov.className='lockov';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','Controles travados');ov.innerHTML='<div class="lockbadge">🔒 Controles travados</div><div class="slide" id="lockSlide"><span>deslize para destravar</span><div class="knob" id="lockKnob" role="slider" aria-label="Deslize para destravar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">›</div></div>';
+  const track=ov.querySelector('#lockSlide'),knob=ov.querySelector('#lockKnob'),label=ov.querySelector('.slide span');let startX=0,x=0,drag=false;
+  const max=()=>track.clientWidth-knob.offsetWidth-8;
+  const setX=v=>{x=Math.max(0,Math.min(max(),v));knob.style.transform='translateX('+x+'px)';label.style.opacity=String(1-Math.min(1,x/(max()*0.6)));knob.setAttribute('aria-valuenow',String(Math.round(100*x/Math.max(1,max()))))};
+  knob.addEventListener('pointerdown',e=>{drag=true;startX=e.clientX-x;knob.style.transition='none';try{knob.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});
+  knob.addEventListener('pointermove',e=>{if(drag)setX(e.clientX-startX)});
+  const end=()=>{if(!drag)return;drag=false;if(x>=max()*0.9){setX(max());unlock()}else{knob.style.transition='transform .25s ease';setX(0)}};
+  knob.addEventListener('pointerup',end);knob.addEventListener('pointercancel',end);
+  knob.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='Enter'){e.preventDefault();unlock()}});
+  ['click','pointerdown','touchstart'].forEach(ev=>ov.addEventListener(ev,e=>{if(e.target===ov||e.target.classList.contains('lockbadge'))e.preventDefault()},{passive:false}));
+  return ov}
+document.addEventListener('pointerdown',()=>{lastTap=Date.now();if(!locked)lastAct=Date.now()},{capture:true});
+document.addEventListener('keydown',()=>{if(!locked)lastAct=Date.now()},{capture:true});
+setInterval(()=>{if(lockActive()&&!locked&&Date.now()-lastAct>LOCK_IDLE_MS)lockNow()},1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&IS_PHONE)lockNow()});
+function render(){if(view==='clock'&&prevView!=='clock'&&Date.now()-lastTap<1500&&!(document.getElementById('lockOv'))){locked=false;lastAct=Date.now()}prevView=view;pendingRender=false;app.innerHTML='';let el;switch(view){case 'edit':el=draft?viewEdit():viewHome();break;case 'prep':el=prep&&tById(prep.tid)?viewPrep():viewHome();break;case 'clock':el=(S.live&&tById(S.live.tid))?viewClock(false):viewHome();break;case 'tv':el=viewTV();break;case 'close':el=closing?viewClose():viewHome();break;case 'game':el=S.games.find(g=>g.id===gameId)?viewGame():viewGames();break;case 'games':el=viewGames();break;case 'players':el=viewPlayers();break;case 'ranking':case 'season':el=viewSeason();break;case 'last':el=viewLast();break;default:view='home';el=viewHome()}app.appendChild(el);if(dialog){app.appendChild(viewDialog());if(dialog.onOpen)dialog.onOpen()}if(view==='clock'||view==='tv'){liveSig=S.live?[S.live.tid,S.live.roster.join(','),S.live.elims.length,S.live.dealer,S.live.running].join('|'):'none';updateClockFields()}syncLock()}
 function h(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild}
 function on(root,sel,ev,fn){root.querySelectorAll(sel).forEach(e=>e.addEventListener(ev,fn))}
 function logoHtml(cls){const s=S.settings;return s.logoUrl?`<img class="${cls||''}" src="${esc(s.logoUrl)}" alt="${esc(s.leagueName)}">`:`<div class="mono" aria-hidden="true">${esc((s.leagueName||'PB').split(/\s+/).filter(w=>/^[A-Za-z0-9]/.test(w)).map(w=>w[0]).join('').slice(0,3).toUpperCase()||'PB')}</div>`}
@@ -247,6 +270,7 @@ function helpHtml(){return `<section class="panel help">
     <li><b>Round − / +</b> e a <b>barra de tempo</b> ajustam o relógio. <kbd>Espaço</kbd> dá play e pausa.</li>
   </ul>
   <p><b>Pontuação.</b> Cada torneio tem pontos por colocação, por participação e por eliminação. Ajuste pontos e prêmios de cada jogador ao fechar a partida. <b>Última rodada</b> mostra a rodada mais recente e a colocação geral do ano; <b>Temporada</b> tem a colocação geral, a grade rodada a rodada (pontos, quem eliminou, colocação, ausências) e as mãos vencedoras.</p>
+  <p><b>Trava no celular.</b> No celular, a tela do relógio fica travada para evitar toques sem querer: segure a bolinha e arraste para a direita para destravar. Depois de 1 minuto sem tocar na tela, ou ao bloquear o celular, ela trava de novo; o botão 🔒 trava na hora. No computador e na TV não há trava.</p>
   <p><b>Sinais sonoros.</b> Um sinal a um minuto do fim do round, contagem nos últimos cinco segundos e um sinal na troca. O botão de som vale só para este aparelho.</p>
 </section>`}
 
@@ -416,12 +440,12 @@ function headHtml(t,L,tv){return `<header class="chead">
     <div class="brand">${logoHtml()}<div class="name">${esc(t.name)}${L.dealer?` <span class="chip">Dealer: ${esc(L.dealer)}</span>`:''}</div></div>
     <div class="row">
       <span class="lab" id="cSync"></span><span class="lab num" title="Tempo total de jogo">Tempo total <b id="cElapsed" class="num">0:00:00</b></span>
-      <button class="btn icon ghost" id="cSound" title="${UI.sound?'Som ligado':'Som desligado'}" aria-label="Som">${UI.sound?'🔔':'🔕'}</button>
+      ${!tv&&IS_PHONE?`<button class="btn icon ghost" id="cLock" title="Travar controles" aria-label="Travar controles">🔒</button>`:''}<button class="btn icon ghost" id="cSound" title="${UI.sound?'Som ligado':'Som desligado'}" aria-label="Som">${UI.sound?'🔔':'🔕'}</button>
       <button class="btn icon ghost" id="cFull" title="Tela cheia" aria-label="Tela cheia">⛶</button>
       ${tv?`<button class="btn ghost exit" id="cExitTV">Sair do modo TV</button>`:`<button class="btn ghost" id="cTV">Modo TV</button><button class="btn ghost" id="cHome">Torneios</button>`}
     </div>
   </header>`}
-function bindHead(root){on(root,'#cSound','click',()=>{UI.sound=!UI.sound;saveUI();ac();render()});
+function bindHead(root){on(root,'#cLock','click',lockNow);on(root,'#cSound','click',()=>{UI.sound=!UI.sound;saveUI();ac();render()});
   on(root,'#cFull','click',()=>{if(document.fullscreenElement){document.exitFullscreen().catch(()=>{})}else if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{})}});
   on(root,'#cHome','click',()=>go('home'));on(root,'#cTV','click',()=>go('tv'));on(root,'#cExitTV','click',()=>go(S.live?'clock':'home'))}
 function viewClock(){const L=S.live,t=tById(L.tid);const root=h(`<div class="clock">

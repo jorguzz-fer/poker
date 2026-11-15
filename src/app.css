@@ -232,3 +232,12 @@ table.matrix tfoot td{background:var(--panel-2);font-weight:600;border-top:1px s
 table.matrix td.absn{color:var(--danger)}
 /* próximo round: metade do tamanho anterior, em cinza */
 #cNext{font-size:calc((clamp(28px,5vw,56px) - 2pt) / 2);color:var(--muted)}
+/* trava de segurança do celular (visual único, escuro, sobre qualquer tema) */
+.lockov{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,rgba(6,14,10,.78) 0%,rgba(6,14,10,.35) 38%,rgba(6,14,10,0) 60%);touch-action:none;-webkit-user-select:none;user-select:none}
+.lockbadge{background:rgba(6,14,10,.82);color:#f3edda;border:1px solid rgba(228,187,92,.6);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.slide{position:relative;width:min(440px,100%);height:64px;border-radius:999px;background:rgba(18,32,25,.92);border:1px solid rgba(228,187,92,.55);overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.slide span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-left:56px;color:#f3edda;font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}
+.knob{position:absolute;left:4px;top:4px;width:56px;height:56px;border-radius:50%;background:#e4bb5c;color:#1a1408;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;touch-action:none;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.knob:focus-visible{outline:3px solid #f3edda;outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.slide span{background:linear-gradient(90deg,#f3edda 0%,#f3edda 40%,#e4bb5c 50%,#f3edda 60%,#f3edda 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:lockshine 2.4s linear infinite}}
+@keyframes lockshine{from{background-position:100% 0}to{background-position:-100% 0}}
